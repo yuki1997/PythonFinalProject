@@ -1,24 +1,33 @@
-import time
 from selenium import webdriver
-from selenium.webdriver.support.select import Select
-from pyquery import PyQuery as pq
-
-# doc = pq('http://zs.neusoft.edu.cn/pointline.html')
-# provinces = doc('select')('#prov').text()
-# print(provinces)
+from urllib.parse import urlencode
+import requests
+import json
+import time
 
 driver = webdriver.Chrome(executable_path='C:\chromedriver.exe')
 driver.maximize_window()
 driver.get('http://zs.neusoft.edu.cn/pointline.html')
 
 
-# province = driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[3]/select')
-# provinceList = province.find_elements_by_tag_name('option')
-# options = []
-# for option in provinceList:
-#     options.append(option.text)
-# print(options)
-# driver.close()
+def start_requests():
+    base_url = 'http://zs.neusoft.edu.cn/index.php?'
+    ajax_urls = []
+    ajax_url = []
+    for value in getLevelList().values():
+        for value1 in getYearList().values():
+            for value2 in getProvinceList().values():
+                parm = {
+                    'm': 'pointline',
+                    'c': 'index',
+                    'a': 'public_search',
+                    'cengci': value,
+                    'year': value1,
+                    'prov': value2
+                }
+                ajax_urls.append(base_url + urlencode(parm))
+    for i in range(0, len(ajax_urls), 1):
+        ajax_url.append(i)
+    return dict(zip(ajax_url, ajax_urls))
 
 
 def getLevelList():
@@ -32,7 +41,7 @@ def getLevelList():
     for i in range(0, len(Levels), 1):
         levels.append(i)
 
-    return zip(levels, Levels)
+    return dict(zip(levels, Levels))
 
 
 def getYearList():
@@ -46,7 +55,7 @@ def getYearList():
     for i in range(0, len(Years), 1):
         years.append(i)
 
-    return zip(years, Years)
+    return dict(zip(years, Years))
 
 
 def getProvinceList():
@@ -61,75 +70,22 @@ def getProvinceList():
     for i in range(0, len(Provinces), 1):
         provinces.append(i)
 
-    return zip(provinces, Provinces)
+    return dict(zip(provinces, Provinces))
 
 
 def Click():
     driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[4]').click()
 
 
+def parser():
+    for value in start_requests().values():
+        response = requests.get(value)
+        json = response.json()
+        data = json.get('data')
+
+        if data != None:
+            print(data)
+
+
 if __name__ == '__main__':
-    for key, value in getLevelList():
-        for key1, value1 in getYearList():
-            for key2, value2 in getProvinceList():
-                Select(driver.find_element_by_name('cengci')).select_by_value(value)
-                Select(driver.find_element_by_name('year')).select_by_value(value1)
-                Select(driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[3]/select')).select_by_value(value2)
-                Click()
-                time.sleep(1)
-    driver.close()
-
-# time.sleep(1)
-# Select(driver.find_element_by_name('cengci')).select_by_value('0')
-# time.sleep(1)
-# Select(driver.find_element_by_name('year')).select_by_value('2018')
-# time.sleep(1)
-# driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[4]').click()
-# time.sleep(1)
-# Select(driver.find_element_by_name('year')).select_by_value('2017')
-# time.sleep(1)
-# driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[4]').click()
-# time.sleep(1)
-# Select(driver.find_element_by_name('year')).select_by_value('2016')
-# time.sleep(1)
-# driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[4]').click()
-# time.sleep(1)
-# Select(driver.find_element_by_name('cengci')).select_by_value('1')
-# time.sleep(1)
-# Select(driver.find_element_by_name('year')).select_by_value('2018')
-# time.sleep(1)
-# driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[4]').click()
-# time.sleep(1)
-# Select(driver.find_element_by_name('year')).select_by_value('2017')
-# time.sleep(1)
-# driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[4]').click()
-# time.sleep(1)
-# Select(driver.find_element_by_name('year')).select_by_value('2016')
-# time.sleep(1)
-# driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[4]').click()
-# time.sleep(1)
-#
-# options = Select(driver.find_element_by_name('cengci')).all_selected_options
-# for option in options:
-#     print('已经被选中的option' + option.text)
-#
-# years = Select(driver.find_element_by_name('year')).all_selected_options
-# for year in years:
-#     print('已经被选中的year' + year.text)
-
-# def getInfo(element, value, elementYear, valueYear):  # element: 三个下拉栏 value：下拉栏中的值
-#     option = webdriver.ChromeOptions()
-#     # option.add_argument('headless')
-#     driver = webdriver.Chrome(executable_path='C:\chromedriver.exe')
-#     driver.maximize_window()
-#     driver.get('http://zs.neusoft.edu.cn/pointline.html')
-#     Select(driver.find_element_by_name(element)).select_by_value(value)
-#     time.sleep(1)
-#     Select(driver.find_element_by_name(elementYear)).select_by_value(valueYear)
-#     time.sleep(1)
-#     driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[4]').click()
-#     time.sleep(1)
-#
-# if __name__ == '__main__':
-#     getInfo('cengci', '0', 'year', '2018')
-#     getInfo('cengci', '1', 'year', '2017')
+    parser()
