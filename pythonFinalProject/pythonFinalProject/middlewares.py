@@ -4,9 +4,31 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
+import time
+from scrapy.http import HtmlResponse
 from scrapy import signals
+from selenium import webdriver
+from selenium.webdriver.support.select import Select
+from selenium.webdriver.support.ui import WebDriverWait
 
+
+# class SeleiumMiddleware(object):
+#     def __init__(self, timeout=None, service_args=[]):
+#         self.timeout = timeout
+#         self.browser = webdriver.Chrome(service_args=service_args)
+#         self.browser.set_window_size(1920, 1080)
+#         self.browser.set_page_load_timeout(self.timeout)
+#         self.wait = WebDriverWait(self.browser, self.timeout)
+#
+#     def __del__(self):
+#         self.browser.close()
+#
+#     def process_request(self, request, spider):
+#         pass
+#
+#     def from_crawler(cls, crawler):
+#         return cls(timeout = crawler.setting.get('SELENIUM_TIMEOUT'),
+#                    service_args = crawler.setting.get('CHROME_SERVICE_ARGS'))
 
 class PythonfinalprojectSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -87,7 +109,24 @@ class PythonfinalprojectDownloaderMiddleware(object):
         # - return a Response object
         # - return a Request object
         # - or raise IgnoreRequest
-        return response
+        driver = spider.driver
+        if request.url in spider.start_urls:
+            try:
+                driver.get(request.url)
+                for key, value in spider.DemoSpider.getLevelList():
+                    for key1, value1 in spider.DemoSpider.getYearList():
+                        for key2, value2 in spider.DemoSpider.getProvinceList():
+                            Select(driver.find_element_by_name('cengci')).select_by_value(value)
+                            Select(driver.find_element_by_name('year')).select_by_value(value1)
+                            Select(driver.find_element_by_xpath(
+                                '/html/body/div[5]/div/div/div/form/ul/li[3]/select')).select_by_value(value2)
+                            spider.DemoSpider.Click()
+                            time.sleep(1)
+                return HtmlResponse(url=request.url, body=self.driver.page.source, request=request, encoding='utf-8', status=200)
+
+            except TimeoutError:
+                return HtmlResponse(url=request.url, status=500, request=request)
+        # return response
 
     def process_exception(self, request, exception, spider):
         # Called when a download handler or a process_request()

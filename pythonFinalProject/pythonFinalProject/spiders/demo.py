@@ -6,28 +6,61 @@ from selenium import webdriver
 from selenium.webdriver.support.select import Select
 import requests
 
+driver = webdriver.Chrome(executable_path='C:\chromedriver.exe')
+province = driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[3]/select')
+provinceList = province.find_elements_by_tag_name('option')
+options = []
+for option in provinceList:
+    options.append(option.text)
+print(options)
+
 class DemoSpider(scrapy.Spider):
-    name = 'demo'
-    # allowed_domains = ['demo.com']
+    name = 'zs'
+    allowed_domains = ['http://zs.neusoft.edu.cn/pointline.html']
     start_urls = ['http://zs.neusoft.edu.cn/pointline.html']
 
-    def getInfo(self, element, value, elementYear, valueYear):  # element: 三个下拉栏 value：下拉栏中的值
-        option = webdriver.ChromeOptions()
-        option.add_argument('headless')
-        driver = webdriver.Chrome(executable_path='C:\chromedriver.exe')
-        driver.maximize_window()
-        driver.get('http://zs.neusoft.edu.cn/pointline.html')
-        Select(driver.find_element_by_name(element)).select_by_value(value)
-        time.sleep(1)
-        Select(driver.find_element_by_name(elementYear)).select_by_value(valueYear)
-        time.sleep(1)
+    def getLevelList(self):
+        Level = driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[1]/select')
+        LevelList = Level.find_elements_by_tag_name('option')
+        levels = []
+        Levels = []
+        for option in LevelList:
+            Levels.append(option.get_attribute('value'))
+
+        for i in range(0, len(Levels), 1):
+            levels.append(i)
+
+        return zip(levels, Levels)
+
+    def getYearList(self):
+        Year = driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[2]/select')
+        YearList = Year.find_elements_by_tag_name('option')
+        years = []
+        Years = []
+        for option in YearList:
+            Years.append(option.get_attribute('value'))
+
+        for i in range(0, len(Years), 1):
+            years.append(i)
+
+        return zip(years, Years)
+
+    def getProvinceList(self):
+        province = driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[3]/select')
+        provinceList = province.find_elements_by_tag_name('option')
+        provinces = []
+        Provinces = []
+
+        for option in provinceList:
+            Provinces.append(option.get_attribute('value'))
+
+        for i in range(0, len(Provinces), 1):
+            provinces.append(i)
+
+        return zip(provinces, Provinces)
+
+    def Click(self):
         driver.find_element_by_xpath('/html/body/div[5]/div/div/div/form/ul/li[4]').click()
-        time.sleep(1)
 
     def parse(self, response):
         pass
-        
-
-
-# if __name__ == '__main__':
-#
