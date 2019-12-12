@@ -15,7 +15,7 @@ SPIDER_MODULES = ['pythonFinalProject.spiders']
 NEWSPIDER_MODULE = 'pythonFinalProject.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-# USER_AGENT = 'pythonFinalProject (+http://www.yourdomain.com)'
+USER_AGENT = 'pythonFinalProject (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -63,9 +63,9 @@ ROBOTSTXT_OBEY = False
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-    'pythonFinalProject.pipelines.PythonfinalprojectPipeline': 300,
-}
+# ITEM_PIPELINES = {
+#     'pythonFinalProject.pipelines.PythonfinalprojectPipeline': 300,
+# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
