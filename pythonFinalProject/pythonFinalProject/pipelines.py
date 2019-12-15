@@ -8,7 +8,7 @@
 import pymysql
 
 
-class PythonfinalprojectPipeline(object):
+class zsPipeline(object):
     def __init__(self):
         self.conn = pymysql.connect(
             host='localhost',
@@ -20,12 +20,16 @@ class PythonfinalprojectPipeline(object):
         )
 
     def process_item(self, item, spider):
-        insert_sql = 'insert into zsInfo (level, year, province, major, subject, score) values (%s, %s, %s, %s, %s, %s)'
+        insert_sql = 'insert into zsinfo (level, year, province, ScienceScoreLine, LiberalArtsScoreLine,ArtScience, ArtLiberalArt, major, subject, score) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         try:
             cursor = self.conn.cursor()
             cursor.execute(insert_sql, (item['level'],
                                         item['year'],
                                         item['province'],
+                                        item['ScienceScoreLine'],
+                                        item['LiberalArtsScoreLine'],
+                                        item['ArtScience'],
+                                        item['ArtLiberalArt'],
                                         item['major'],
                                         item['subject'],
                                         item['score']))

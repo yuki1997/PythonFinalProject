@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import json
 
+
 import scrapy
 from selenium import webdriver
 from urllib.parse import urlencode
 from scrapy import Request, Spider
 
-# option = webdriver.ChromeOptions()
-# option.add_argument('headless')
-driver = webdriver.Chrome(executable_path='C:\chromedriver.exe')
-driver.maximize_window()
+option = webdriver.ChromeOptions()
+option.add_argument('headless')
+driver = webdriver.Chrome(chrome_options=option, executable_path='C:\chromedriver.exe')
 driver.get('http://zs.neusoft.edu.cn/pointline.html')
 
 
@@ -74,23 +74,34 @@ class DemoSpider(scrapy.Spider):
                     }
                     # url.append(base_url + str(urlencode(parm)))
                     url = base_url + str(urlencode(parm))
-                    return url
                     yield Request(url=url, callback=self.parse)
 
     def parse(self, response):
         jsons = json.loads(response.body)
-        print(response)
-        # print(self.start_requests())
-        # print("理科分数线：")
-        # print(jsons.get('show').get('commonli'))
-        # print("文科分数线：")
-        # print(jsons.get('show').get('commonwen'))
-        # print("艺术理：")
-        # print(jsons.get('show').get('artli'))
-        # print("艺术文：")
-        # print(jsons.get('show').get('artwen'))
-        #
-        # # if jsons.get('data') is not None:
-        # print(jsons.get('data').get('zy'))
-        # print(jsons.get('data').get('kl'))
-        # print(jsons.get('data').get('fs'))
+        print(self.start_requests())
+
+        # item = zsItem()
+        if jsons.get('show').get('commonli') != 0 or jsons.get('show').get('commonwen') != 0 or jsons.get('show').get(
+                'artli') != 0 or jsons.get('show').get('artwen') != 0:
+            print("理科分数线：")
+            print(jsons.get('show').get('commonli'))
+            print("文科分数线：")
+            print(jsons.get('show').get('commonwen'))
+            print("艺术理：")
+            print(jsons.get('show').get('artli'))
+            print("艺术文：")
+            print(jsons.get('show').get('artwen'))
+            print(jsons.get('data').get('zy'))
+            print(jsons.get('data').get('kl'))
+            print(jsons.get('data').get('fs'))
+
+            # item['level'] =
+            # item['year'] =
+            # item['province'] =
+            # item['ScienceScoreLine'] = jsons.get('show').get('commonli')
+            # item['LiberalArtsScoreLine'] = jsons.get('show').get('commonwen')
+            # item['ArtScience'] = jsons.get('show').get('artli')
+            # item['ArtLiberalArt'] = jsons.get('show').get('artwen')
+            # item['major'] =
+            # item['subject'] =
+            # item['score'] =

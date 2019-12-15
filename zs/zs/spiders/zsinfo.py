@@ -6,7 +6,7 @@ from selenium import webdriver
 from urllib.parse import urlencode
 from urllib import parse
 from scrapy import Request, Spider
-
+import jsonpath
 from zs.items import ZsItem
 
 driver = webdriver.Firefox(executable_path='C:\geckodriver.exe')
@@ -78,9 +78,10 @@ class Zsinfo(scrapy.Spider):
 
     def parse(self, response):
         jsons = json.loads(response.body)
+        major = []
+        subject = []
+        score = []
 
-        info = []
-        datas = []
         item = ZsItem()
         if jsons.get('show').get('commonli') != 0 or jsons.get('show').get('commonwen') != 0 or jsons.get('show').get(
                 'artli') != 0 or jsons.get('show').get('artwen') != 0:
@@ -89,8 +90,40 @@ class Zsinfo(scrapy.Spider):
             year = params['year'].pop()
             prov = params['prov'].pop()
             dictInfo = dict(zip(['cengci', 'year', 'prov'], [cengci, year, prov]))
-            print(dictInfo)
-            print(jsons.get('show'))
-            print(jsons.get('data'))
+            scoreInfo = jsons.get('show')
+            # print(jsons.get('data'))
+            key = ['major', 'subject', 'score']
+            majorList = []
+            subjectList = []
+            # majorList = jsonpath.jsonpath(jsons, '$..zy')
+            # subjectList = jsonpath.jsonpath(jsons, '$..kl')
+            # scoreList = jsonpath.jsonpath(jsonpath, '$.data..fs')
+            fsList = []
+            # print(majorList)
+            # print(subjectList)
+            # print(scoreList)
 
-            # yield item
+            '''json test'''
+            mask = jsons['data']
+            for zidian in mask:
+                majorList.append(mask[zidian]['zy'])
+                majorList.append(mask[zidian]['kl'])
+                majorList.append(mask[zidian]['fs'])
+
+            for i in range(0, len(majorList), 3):
+                scoreList = majorList[i: i + 3]
+                print(scoreList)
+
+            '''test end'''
+            item['level'] = dictInfo['cengci']
+            item['year'] = dictInfo['year']
+            item['province'] = dictInfo['prov']
+            item['ScienceScoreLine'] = scoreInfo['commonli']
+            item['LiberalArtsScoreLine'] = scoreInfo['commonwen']
+            item['ArtScience'] = scoreInfo['artli']
+            item['ArtLiberalArt'] = scoreInfo['artwen']
+            #
+            # item['major'] = majorList.pop()
+            # item['subject'] = subjectList.pop()
+            # item['score'] = fsList.pop()
+            yield item
