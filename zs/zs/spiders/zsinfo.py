@@ -72,58 +72,52 @@ class Zsinfo(scrapy.Spider):
                         'year': value1,
                         'prov': value2
                     }
-                    # url.append(base_url + str(urlencode(parm)))
                     url = base_url + str(urlencode(parm))
                     yield Request(url=url, callback=self.parse)
 
     def parse(self, response):
         jsons = json.loads(response.body)
-        major = []
-        subject = []
-        score = []
-
         item = ZsItem()
         if jsons.get('show').get('commonli') != 0 or jsons.get('show').get('commonwen') != 0 or jsons.get('show').get(
                 'artli') != 0 or jsons.get('show').get('artwen') != 0:
+            majorList = []
+            subjectList = []
+            scoreList = []
+            majorNum = []
+            subjectNum = []
+            scoreNum = []
+
             params = parse.parse_qs(parse.urlparse(response.request.url).query)
             cengci = params['cengci'].pop()
             year = params['year'].pop()
             prov = params['prov'].pop()
             dictInfo = dict(zip(['cengci', 'year', 'prov'], [cengci, year, prov]))
             scoreInfo = jsons.get('show')
-            # print(jsons.get('data'))
-            key = ['major', 'subject', 'score']
-            majorList = []
-            subjectList = []
-            # majorList = jsonpath.jsonpath(jsons, '$..zy')
-            # subjectList = jsonpath.jsonpath(jsons, '$..kl')
-            # scoreList = jsonpath.jsonpath(jsonpath, '$.data..fs')
-            fsList = []
-            # print(majorList)
-            # print(subjectList)
-            # print(scoreList)
-
-            '''json test'''
             mask = jsons['data']
-            for zidian in mask:
-                majorList.append(mask[zidian]['zy'])
-                majorList.append(mask[zidian]['kl'])
-                majorList.append(mask[zidian]['fs'])
 
-            for i in range(0, len(majorList), 3):
-                scoreList = majorList[i: i + 3]
-                print(scoreList)
+            for info in mask:
+                majorList.append(mask[info]['zy'])
+                subjectList.append(mask[info]['kl'])
+                scoreList.append(mask[info]['fs'])
 
-            '''test end'''
-            item['level'] = dictInfo['cengci']
-            item['year'] = dictInfo['year']
-            item['province'] = dictInfo['prov']
-            item['ScienceScoreLine'] = scoreInfo['commonli']
-            item['LiberalArtsScoreLine'] = scoreInfo['commonwen']
-            item['ArtScience'] = scoreInfo['artli']
-            item['ArtLiberalArt'] = scoreInfo['artwen']
-            #
-            # item['major'] = majorList.pop()
-            # item['subject'] = subjectList.pop()
-            # item['score'] = fsList.pop()
-            yield item
+            [majorNum.append(i) for i in range(0, len(majorList))]
+            [subjectNum.append(i) for i in range(0, len(subjectList))]
+            [scoreNum.append(i) for i in range(0, len(scoreList))]
+
+            majorInfo = dict(zip(majorNum, majorList))
+            subjectInfo = dict(zip(subjectNum, subjectList))
+            sInfo = dict(zip(scoreNum, scoreList))
+
+            for i in range(0, len(majorList)):
+                '''test end'''
+                item['level'] = dictInfo['cengci']
+                item['year'] = dictInfo['year']
+                item['province'] = dictInfo['prov']
+                item['ScienceScoreLine'] = scoreInfo['commonli']
+                item['LiberalArtsScoreLine'] = scoreInfo['commonwen']
+                item['ArtScience'] = scoreInfo['artli']
+                item['ArtLiberalArt'] = scoreInfo['artwen']
+                item['major'] = majorInfo[i]
+                item['subject'] = subjectInfo[i]
+                item['score'] = sInfo[i]
+                yield item
