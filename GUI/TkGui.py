@@ -2,6 +2,8 @@ from tkinter import *
 import pymysql
 import numpy
 from sklearn.linear_model import LinearRegression
+import matplotlib
+
 
 class Query(Frame):
     def __init__(self, window):
@@ -41,22 +43,26 @@ class Query(Frame):
                                  charset='utf8'
                                  )
             cursor = db.cursor()
-            sql = "select year, province, major, score from zsinfo where province = " + "\"" + s1 + "\"" + "and major = " + "\"" +s2 + "\";"
+            sql = "select year, score from zsinfo where province = " + "\"" + s1 + "\"" + "and major = " + "\"" + s2 + "\"; "
             print(sql)
+            rows = []
             try:
                 cursor.execute(sql)
                 result = cursor.fetchall()
                 for row in result:
-                    print(row)
-                    print(type(row))
+                    rows.append(row)
+                print(rows)
+                print(len(rows))
             except Exception as e:
                 print(e)
                 db.rollback()
-            self.lab4["text"] = [row for row in result]
+            for i in range(0, len(rows)):
+                self.lab4["text"] = rows[i]
 
 
-root = Tk()
-root.title("大连东软信息学院报考小助手")
-root.geometry('800x480')
-app = Query(root)
-root.mainloop()
+if __name__ == '__main__':
+    root = Tk()
+    root.title("大连东软信息学院报考小助手")
+    root.geometry('360x180')
+    app = Query(root)
+    root.mainloop()

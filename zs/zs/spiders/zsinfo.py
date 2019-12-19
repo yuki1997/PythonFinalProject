@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
-
 import scrapy
 from selenium import webdriver
 from urllib.parse import urlencode
 from urllib import parse
-from scrapy import Request, Spider
-import jsonpath
+from scrapy import Request
 from zs.items import ZsItem
 
 driver = webdriver.Firefox(executable_path='C:\geckodriver.exe')
@@ -109,7 +107,6 @@ class Zsinfo(scrapy.Spider):
             sInfo = dict(zip(scoreNum, scoreList))
 
             for i in range(0, len(majorList)):
-                '''test end'''
                 item['level'] = dictInfo['cengci']
                 item['year'] = dictInfo['year']
                 item['province'] = dictInfo['prov']
