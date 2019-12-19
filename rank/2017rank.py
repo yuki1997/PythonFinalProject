@@ -8,12 +8,13 @@ hrefs = []
 provinces = []
 htmls = []
 
+
 def DBQuery():
     conn = pymysql.connect(host='localhost',
-                       user='root',
-                       password='591586',
-                       db='zs',
-                       charset='utf8')
+                           user='root',
+                           password='591586',
+                           db='zs',
+                           charset='utf8')
     cursor = conn.cursor()
     sql = 'select href from 2018href'
     try:
@@ -24,6 +25,7 @@ def DBQuery():
         conn.rollback()
     conn.close()
     return data
+
 
 def get2017Href():
     for row in DBQuery():
@@ -49,6 +51,7 @@ def get2017Href():
             provinces[i] = provinces[i] + '文科'
     return dict(zip(provinces, hrefs))
 
+
 def dicToSql(dic, sql):
     sf = ''
     for key in dic:
@@ -59,13 +62,13 @@ def dicToSql(dic, sql):
     sql2 = sql % sf
     return sql2
 
-def DBInsert():
 
+def DBInsert():
     conn = pymysql.connect(host='localhost',
-                            user='root',
-                            password='591586',
-                            db='zs',
-                            charset='utf8')
+                           user='root',
+                           password='591586',
+                           db='zs',
+                           charset='utf8')
     cursor = conn.cursor()
     sql = 'insert into 2017href(province, href) values %s;'
     ret = dicToSql(get2017Href(), sql)
