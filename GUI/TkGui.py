@@ -56,8 +56,8 @@ class Query(Frame):
             except Exception as e:
                 print(e)
                 db.rollback()
-            for i in range(0, len(rows)):
-                self.lab4["text"] = rows[i]
+
+            self.lab4["text"] = '您被录取的概率为：'
 
 
 if __name__ == '__main__':
