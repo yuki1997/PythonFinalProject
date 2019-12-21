@@ -11,7 +11,7 @@ def DBQuery():
                            db='zs',
                            charset='utf8')
     cursor = conn.cursor()
-    sql = 'select province, href from 2017href'
+    sql = 'select province, href from 2018href'
     try:
         cursor.execute(sql)
         data = cursor.fetchall()
@@ -30,6 +30,8 @@ def Geturl():
         soup = BeautifulSoup(html, "html.parser").find_all("tr")
         info = []
         infos = []
+        # print(row[0])
+        # print(row[1])
         for tr in soup:
             tdList = []
             for j in tr:
@@ -44,50 +46,13 @@ def Geturl():
         infos = [re.findall(r'\d+|[\d+][→][\d+]', infos[i]) for i in range(len(infos))]
         for info in infos:
             for j in info:
-                if j == '2017':
+                if j == '2018':
                     info.remove(j)
 
         while [] in infos:
             infos.remove([])
-        # if infos is not None:
+        # if infos != [] and infos is not None:
         #     print(infos)
-        # for i in range(0, len(info)):
-        # print(info[i])
-        # if info[i] == '→':
-
-        # info = [j.strip() for i in info for j in i if j.strip() != '']
-        # info = [re.findall(r'\d+|[→]', info[i]) for i in range(len(info))]
-        # info = [j.strip() for i in info for j in i if j.strip() != '2017']
-        # print(info)
-        # if info[0] == '1':
-        #     print('error')
-        # i = 0
-        # s1 = []
-        # for i in info:
-        #     if i == '→':
-
-        # if int(info[0]) > 100 and int(info[2]) < 100:
-        #     for i in range(0, len(info), 3):
-        #         b = info[i: i + 3]
-        #         s1.append(b)
-        # elif int(info[0]) > 100:
-        #     for i in range(0, len(info), 2):
-        #         b = info[i: i + 2]
-        #         s1.append(b)
-        # elif info[0] == '1' and info[3] == '2':
-        #     for i in range(0, len(info), 3):
-        #         b = info[i:i + 3]
-        #         s1.append(b)
-        # elif info[0] == '1':
-        #     for i in range(0, len(info), 4):
-        #         b = info[i:i + 4]
-        #         s1.append(b)
-        # else:
-        #     for i in range(0, len(info), 3):
-        #         b = info[i:i + 3]
-        #         s1.append(b)
-        # if s1 is not None:
-        #     print(s1)
         rankList = []
         ranksList = []
         for info in infos:
@@ -122,7 +87,6 @@ def Geturl():
             b = rankList[i:i + 4]
             ranksList.append(b)
         if ranksList != []:
-            print(ranksList)
             yield ranksList
 
 def DBInsert(list):
@@ -135,7 +99,7 @@ def DBInsert(list):
     try:
         for l in list:
             for i in l:
-                sql = "insert into 2017Rank(province, highscore, lowscore, ranks) values('%s', '%s', '%s', '%s')"%(i[0], i[1], i[2], i[3])
+                sql = "insert into 2018Rank(province, highscore, lowscore, ranks) values('%s', '%s', '%s', '%s')"%(i[0], i[1], i[2], i[3])
                 print(sql)
                 cursor.execute(sql)
                 conn.commit()
@@ -144,5 +108,8 @@ def DBInsert(list):
         conn.rollback()
 
 if __name__ == '__main__':
+    # print(Geturl())
     DBInsert(Geturl())
-    # Geturl()
+    # for l in Geturl():
+    #     for i in l:
+    #         print(','.join(i))
