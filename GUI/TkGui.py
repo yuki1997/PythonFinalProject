@@ -1,8 +1,10 @@
 from tkinter import *
-import pymysql
-import numpy
-from sklearn import linear_model
+import tkinter.messagebox
 import matplotlib
+import pymysql
+import numpy as np
+from sklearn import linear_model
+import matplotlib.pyplot as plt
 
 
 class Query(Frame):
@@ -25,12 +27,16 @@ class Query(Frame):
         self.lab4.grid(row=3, column=0)
         self.ent4 = Entry(frame)
         self.ent4.grid(row=3, column=1, sticky=W)
-        self.button = Button(frame, text="查询", command=self.Submit)
+        self.button = Button(frame, text="查询", command=self.show)
         self.button.grid(row=4, column=1, sticky=E)
         self.lab5 = Label(frame, text="")
         self.lab5.grid(row=5, column=0, sticky=W)
+        self.lab6 = Label(frame, text='')
+        self.lab6.grid(row=6, column=0, sticky=W)
         self.button2 = Button(frame, text="退出", command=frame.quit)
         self.button2.grid(row=5, column=3, sticky=E)
+        # self.button3 = Button(frame, text="查看历年分数线", command = self.showRank())
+        # self.button3.grid(row=6, column=3, sticky=E)
 
     def getProvince(self):
         province = self.ent1.get()
@@ -65,7 +71,6 @@ class Query(Frame):
             conn.rollback()
         conn.close()
 
-
     def Query2016(self):
         conn = pymysql.connect(host='localhost',
                                user='root',
@@ -73,7 +78,8 @@ class Query(Frame):
                                db='zs',
                                charset='utf8')
         cursor = conn.cursor()
-        sql = "select highscore, lowscore, ranks from 2016Rank where province = " +"\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);"%(self.getScore(), self.getScore())
+        sql = "select ranks from 2016Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
+        self.getScore(), self.getScore())
         try:
             cursor.execute(sql)
             data2016 = cursor.fetchall()
@@ -83,7 +89,6 @@ class Query(Frame):
             conn.rollback()
         conn.close()
 
-
     def Query2017(self):
         conn = pymysql.connect(host='localhost',
                                user='root',
@@ -91,7 +96,8 @@ class Query(Frame):
                                db='zs',
                                charset='utf8')
         cursor = conn.cursor()
-        sql = "select highscore, lowscore, ranks from 2017Rank where province = " +"\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);"%(self.getScore(), self.getScore())
+        sql = "select ranks from 2017Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
+        self.getScore(), self.getScore())
         try:
             cursor.execute(sql)
             data2017 = cursor.fetchall()
@@ -101,7 +107,6 @@ class Query(Frame):
             conn.rollback()
         conn.close()
 
-
     def Query2018(self):
         conn = pymysql.connect(host='localhost',
                                user='root',
@@ -109,7 +114,8 @@ class Query(Frame):
                                db='zs',
                                charset='utf8')
         cursor = conn.cursor()
-        sql = "select highscore, lowscore, ranks from 2018Rank where province = " +"\"" + self.getProvince() + "\"" + " and (highscore = %s or lowscore = %s);"%(self.getScore(), self.getScore())
+        sql = "select ranks from 2018Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore = %s or lowscore = %s);" % (
+        self.getScore(), self.getScore())
         try:
             cursor.execute(sql)
             data2018 = cursor.fetchall()
@@ -119,21 +125,23 @@ class Query(Frame):
             conn.rollback()
         conn.close()
 
-
     def Forecast(self):
-        rank = []
-        mininumScore = []
-        if len(self.Query2016()) > 0 and len(self.Query2017()) > 0 and len(self.Query2018()) > 0:
-            rank.append(self.Query2016()[0][2])
-            rank.append(self.Query2017()[0][2])
-            rank.append(self.Query2018()[0][2])
-        mininumScore.append(self.QueryMajor()[0][1])
-        mininumScore.append(self.QueryMajor()[1][1])
-        mininumScore.append(self.QueryMajor()[2][1])
-        print(self.Query2016Rank())
-        print(self.Query2017Rank())
-        print(self.Query2018Rank())
+        x = [[2016], [2017], [2018]]
+        y = [[self.Query2016Rank()[0][0]], [self.Query2017Rank()[0][0]], [self.Query2018Rank()[0][0]]]
+        model = linear_model.LinearRegression()
+        model.fit(x, y)
+        rank2019 = model.predict([[2019]])
+        print("预测2019年被录取的最低名次为：{:.2f}".format(rank2019[0][0]))
+        return rank2019
 
+    def Forecast2(self):
+        x = [[2016], [2017], [2018]]
+        y = [[self.Query2016()[0][0]], [self.Query2017()[0][0]], [self.Query2018()[0][0]]]
+        model = linear_model.LinearRegression()
+        model.fit(x, y)
+        rank2019 = model.predict([[2019]])
+        print("预计您2019年的名次为：{:.2f}".format(rank2019[0][0]))
+        return rank2019
 
     def Query2016Rank(self):
         conn = pymysql.connect(host='localhost',
@@ -142,8 +150,8 @@ class Query(Frame):
                                db='zs',
                                charset='utf8')
         cursor = conn.cursor()
-        sql = "select ranks from 2016Rank where province = " +"\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);"%(self.QueryMajor()[2][1], self.QueryMajor()[2][1])
-        print(sql)
+        sql = "select ranks from 2016Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
+        self.QueryMajor()[2][1], self.QueryMajor()[2][1])
         try:
             cursor.execute(sql)
             rank2016 = cursor.fetchall()
@@ -160,8 +168,8 @@ class Query(Frame):
                                db='zs',
                                charset='utf8')
         cursor = conn.cursor()
-        sql = "select ranks from 2017Rank where province = " +"\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);"%(self.QueryMajor()[1][1], self.QueryMajor()[1][1])
-        print(sql)
+        sql = "select ranks from 2017Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
+        self.QueryMajor()[1][1], self.QueryMajor()[1][1])
         try:
             cursor.execute(sql)
             rank2017 = cursor.fetchall()
@@ -178,8 +186,8 @@ class Query(Frame):
                                db='zs',
                                charset='utf8')
         cursor = conn.cursor()
-        sql = "select ranks from 2018Rank where province = " +"\"" + self.getProvince() + "\"" + " and (highscore = %s or lowscore = %s);"%(self.QueryMajor()[0][1], self.QueryMajor()[0][1])
-        print(sql)
+        sql = "select ranks from 2018Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
+        self.QueryMajor()[0][1], self.QueryMajor()[0][1])
         try:
             cursor.execute(sql)
             rank2018 = cursor.fetchall()
@@ -189,34 +197,34 @@ class Query(Frame):
             conn.rollback()
         conn.close()
 
-    def Submit(self):
+    def show(self):
         s1 = self.ent1.get()
         s2 = self.ent2.get()
         s3 = self.ent3.get()
         if s1 == '' or s2 == '' or s3 == '':
             self.lab5['text'] = '请检查是否有空'
         else:
-            db = pymysql.connect(host='localhost',
-                                 user='root',
-                                 password='591586',
-                                 database='zs',
-                                 port=3306,
-                                 charset='utf8'
-                                 )
-            cursor = db.cursor()
-            sql = "select year, score from zsinfo where province = " + "\"" + s1 + "\"" + "and major = " + "\"" + s2 + "\"; "
-            rows = []
-            try:
-                cursor.execute(sql)
-                result = cursor.fetchall()
-                for row in result:
-                    rows.append(row)
-            except Exception as e:
-                print(e)
-                db.rollback()
-
-            self.lab5["text"] = '您被录取的概率为：'
+            self.lab5["text"] = '预计2019年被录取的最低名次为：' + str('{:.2f}'.format(self.Forecast()[0][0]))
+            self.lab6["text"] = '预计您2019年的名次为：' + str('{:.2f}'.format(self.Forecast2()[0][0]))
             self.Forecast()
+            self.Forecast2()
+            self.draw()
+            # tkinter.messagebox.askokcancel('排名预测', '预计2019年被录取的最低名次为：' + str('{:.2f}'.format(self.Forecast()[0][0])))
+
+
+    def draw(self):
+        # N = 3
+        # index = np.arange(N)
+        x = [self.QueryMajor()[2][0], self.QueryMajor()[1][0], self.QueryMajor()[0][0]]
+        y = [self.QueryMajor()[2][1], self.QueryMajor()[1][1], self.QueryMajor()[0][1]]
+        plt.bar(x,y)
+
+        # plt.xticks(index, yearList)
+        # plt.yticks(np.arange(150, 550, 50))
+        # plt.xlabel('Years')
+        # plt.ylabel('Scores')
+        plt.title('Major scores')
+        plt.show()
 
 
 if __name__ == '__main__':
