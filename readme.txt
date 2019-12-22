@@ -3,9 +3,9 @@ GUI：通过TK实现数据可视化
 pythonFinalProject：废弃项目
 rank：
     href2db：
-        2018rankVer2:爬取https://kaoshi.china.com/gaokao/news/1723427-1.htm页面下所有省份的链接
+        2018rankVer2:爬取'https://kaoshi.china.com/gaokao/news/1723427-1.htm'页面下所有省份的链接
         2018rank：2018rankVer2的上一版本（加入爬取省市功能），已无作用
         2017rank&2016rank：通过查询2018rankVer2存储在数据库的链接爬取子页面对应年份的数据
     infos.py:测试用，已无效
     QueryRank2016-2018：通过查询对应的数据库对页面的表格进行爬取，由于源数据质量较低劣且部分信息没有采用表格而是图片，所以无法实现任意省份年份的排名信息的爬取
-zs：遍历http://zs.neusoft.edu.cn/pointline.html下所有select标签，并对选定标签后网站返回的json进行解析，存入数据库
+zs：遍历'http://zs.neusoft.edu.cn/pointline.html'下所有select标签，并对选定标签后网站返回的json进行解析，存入数据库
