@@ -1,10 +1,11 @@
+import webbrowser
 from tkinter import *
 import tkinter.messagebox
-import matplotlib
 import pymysql
-import numpy as np
+from pyecharts.globals import ThemeType
 from sklearn import linear_model
-import matplotlib.pyplot as plt
+from pyecharts.charts import Line, Bar
+from pyecharts import options as opts
 
 
 class Query(Frame):
@@ -27,16 +28,14 @@ class Query(Frame):
         self.lab4.grid(row=3, column=0)
         self.ent4 = Entry(frame)
         self.ent4.grid(row=3, column=1, sticky=W)
-        self.button = Button(frame, text="查询", command=self.show)
+        self.button = Button(frame, text="排名预测", command=self.show)
         self.button.grid(row=4, column=1, sticky=E)
-        self.lab5 = Label(frame, text="")
-        self.lab5.grid(row=5, column=0, sticky=W)
-        self.lab6 = Label(frame, text='')
-        self.lab6.grid(row=6, column=0, sticky=W)
-        self.button2 = Button(frame, text="退出", command=frame.quit)
-        self.button2.grid(row=5, column=3, sticky=E)
-        # self.button3 = Button(frame, text="查看历年分数线", command = self.showRank())
-        # self.button3.grid(row=6, column=3, sticky=E)
+        self.button2 = Button(frame, text="退出程序", command=frame.quit)
+        self.button2.grid(row=7, column=1, sticky=E)
+        self.button3 = Button(frame, text="查看分数", command=self.showScore)
+        self.button3.grid(row=6, column=1, sticky=E)
+        self.button4 = Button(frame, text="查看排名", command=self.showRank)
+        self.button4.grid(row=5, column=1, sticky=E)
 
     def getProvince(self):
         province = self.ent1.get()
@@ -79,7 +78,7 @@ class Query(Frame):
                                charset='utf8')
         cursor = conn.cursor()
         sql = "select ranks from 2016Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
-        self.getScore(), self.getScore())
+            self.getScore(), self.getScore())
         try:
             cursor.execute(sql)
             data2016 = cursor.fetchall()
@@ -97,7 +96,7 @@ class Query(Frame):
                                charset='utf8')
         cursor = conn.cursor()
         sql = "select ranks from 2017Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
-        self.getScore(), self.getScore())
+            self.getScore(), self.getScore())
         try:
             cursor.execute(sql)
             data2017 = cursor.fetchall()
@@ -115,7 +114,7 @@ class Query(Frame):
                                charset='utf8')
         cursor = conn.cursor()
         sql = "select ranks from 2018Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore = %s or lowscore = %s);" % (
-        self.getScore(), self.getScore())
+            self.getScore(), self.getScore())
         try:
             cursor.execute(sql)
             data2018 = cursor.fetchall()
@@ -151,7 +150,7 @@ class Query(Frame):
                                charset='utf8')
         cursor = conn.cursor()
         sql = "select ranks from 2016Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
-        self.QueryMajor()[2][1], self.QueryMajor()[2][1])
+            self.QueryMajor()[2][1], self.QueryMajor()[2][1])
         try:
             cursor.execute(sql)
             rank2016 = cursor.fetchall()
@@ -169,7 +168,7 @@ class Query(Frame):
                                charset='utf8')
         cursor = conn.cursor()
         sql = "select ranks from 2017Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
-        self.QueryMajor()[1][1], self.QueryMajor()[1][1])
+            self.QueryMajor()[1][1], self.QueryMajor()[1][1])
         try:
             cursor.execute(sql)
             rank2017 = cursor.fetchall()
@@ -187,7 +186,7 @@ class Query(Frame):
                                charset='utf8')
         cursor = conn.cursor()
         sql = "select ranks from 2018Rank where province = " + "\"" + self.getProvince() + "\"" + " and (highscore >= %s and lowscore <= %s);" % (
-        self.QueryMajor()[0][1], self.QueryMajor()[0][1])
+            self.QueryMajor()[0][1], self.QueryMajor()[0][1])
         try:
             cursor.execute(sql)
             rank2018 = cursor.fetchall()
@@ -202,29 +201,42 @@ class Query(Frame):
         s2 = self.ent2.get()
         s3 = self.ent3.get()
         if s1 == '' or s2 == '' or s3 == '':
-            self.lab5['text'] = '请检查是否有空'
+            tkinter.messagebox.askretrycancel('格式非法', '请检查是否有未输入数据')
         else:
-            self.lab5["text"] = '预计2019年被录取的最低名次为：' + str('{:.2f}'.format(self.Forecast()[0][0]))
-            self.lab6["text"] = '预计您2019年的名次为：' + str('{:.2f}'.format(self.Forecast2()[0][0]))
             self.Forecast()
             self.Forecast2()
+            tkinter.messagebox.askokcancel('排名预测', '预计2019年被录取的最低名次为：' + str(
+                '{:.2f}'.format(self.Forecast()[0][0])) + '\n预计您2019年的名次为：' + str(
+                '{:.2f}'.format(self.Forecast2()[0][0])))
             self.draw()
-            # tkinter.messagebox.askokcancel('排名预测', '预计2019年被录取的最低名次为：' + str('{:.2f}'.format(self.Forecast()[0][0])))
-
+            self.drawRank()
 
     def draw(self):
-        # N = 3
-        # index = np.arange(N)
-        x = [self.QueryMajor()[2][0], self.QueryMajor()[1][0], self.QueryMajor()[0][0]]
-        y = [self.QueryMajor()[2][1], self.QueryMajor()[1][1], self.QueryMajor()[0][1]]
-        plt.bar(x,y)
+        columns = [self.QueryMajor()[2][0], self.QueryMajor()[1][0], self.QueryMajor()[0][0]]
+        data1 = [int(self.QueryMajor()[2][1]), int(self.QueryMajor()[1][1]), int(self.QueryMajor()[0][1])]
+        bar = (
+            Line(init_opts=opts.InitOpts(theme=ThemeType.LIGHT))
+                .add_xaxis(columns)
+                .add_yaxis('分数', data1)
+                .set_global_opts(title_opts=opts.TitleOpts(title="心仪专业的分数线以及排名"))
+        )
+        bar.render(path='./score.html')
 
-        # plt.xticks(index, yearList)
-        # plt.yticks(np.arange(150, 550, 50))
-        # plt.xlabel('Years')
-        # plt.ylabel('Scores')
-        plt.title('Major scores')
-        plt.show()
+    def drawRank(self):
+        columns = [self.QueryMajor()[2][0], self.QueryMajor()[1][0], self.QueryMajor()[0][0]]
+        data2 = [int(self.Query2016Rank()[0][0]), int(self.Query2017Rank()[0][0]), int(self.Query2018Rank()[0][0])]
+        bar = (
+            Line(init_opts=opts.InitOpts(theme=ThemeType.LIGHT))
+                .add_xaxis(columns)
+                .add_yaxis('排名', data2)
+                .set_global_opts(title_opts=opts.TitleOpts(title="心仪专业的分数线以及排名"))
+        )
+        bar.render(path='./rank.html')
+
+    def showScore(self):
+        webbrowser.open_new_tab('score.html')
+    def showRank(self):
+        webbrowser.open_new_tab('rank.html')
 
 
 if __name__ == '__main__':
